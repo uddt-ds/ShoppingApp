@@ -17,9 +17,6 @@ class BaseViewController: UIViewController {
         configureUI()
         configureViewHierarchy()
         configureConstraints()
-
-
-
     }
 
     func configureUI() {
@@ -32,5 +29,12 @@ class BaseViewController: UIViewController {
 
     func configureViewHierarchy() {
 
+    }
+
+    func showAlert(title: String) {
+        let alert = UIAlertController(title: "경고", message: title, preferredStyle: .alert)
+        let action = UIAlertAction(title: "확인", style: .default)
+        alert.addAction(action)
+        present(alert, animated: true)
     }
 }
