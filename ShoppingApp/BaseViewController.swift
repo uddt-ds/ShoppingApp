@@ -16,14 +16,14 @@ class BaseViewController: UIViewController {
         
         configureUI()
         configureViewHierarchy()
-        configureConstraints()
+        configureLayout()
     }
 
     func configureUI() {
 
     }
 
-    func configureConstraints() {
+    func configureLayout() {
 
     }
 

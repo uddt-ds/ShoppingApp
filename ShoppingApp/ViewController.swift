@@ -53,8 +53,8 @@ class ViewController: BaseViewController {
         super.configureUI()
     }
 
-    override func configureConstraints() {
-        super.configureConstraints()
+    override func configureLayout() {
+        super.configureLayout()
         
         searchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
