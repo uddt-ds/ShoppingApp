@@ -5,4 +5,13 @@
 //  Created by Lee on 7/25/25.
 //
 
-import Foundation
+import UIKit
+
+extension UIImageView {
+    func designImageView(color: UIColor) {
+        backgroundColor = color
+        clipsToBounds = true
+//        contentMode = .scaleAspectFill
+    }
+
+}
