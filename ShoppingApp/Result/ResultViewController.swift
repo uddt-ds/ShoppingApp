@@ -18,10 +18,12 @@ class ResultViewController: BaseViewController {
         return label
     }()
 
-    let accuracyButton = CustomButton(title: "정확도")
-    let dateButton = CustomButton(title: "날짜순")
-    let highPriceButton = CustomButton(title: "가격 높은 순")
-    let lowPriceButton = CustomButton(title: "가격 낮은 순")
+    let accuracyButton = CustomButton(title: ButtonTitle.accuracy.rawValue)
+    let dateButton = CustomButton(title: ButtonTitle.date.rawValue)
+    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.rawValue)
+    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue)
+
+    var currentData: ResultData = .init(total: 0, items: [])
 
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
@@ -54,12 +56,9 @@ class ResultViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigation()
-        testUI()
+        addButtonTapped()
         collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
-    }
-
-    private func testUI() {
-        resultCountLabel.text = "검색결과"
+        fetchData(display: 30, sortingType: SortingType.accuracy.rawValue)
     }
 
     override func configureViewHierarchy() {
@@ -110,7 +109,24 @@ class ResultViewController: BaseViewController {
     }
 
     private func addButtonTapped() {
+        [accuracyButton, dateButton, highPriceButton, lowPriceButton].forEach {
+            $0.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        }
+    }
 
+    @objc func buttonTapped(_ sender: UIButton) {
+        switch sender {
+        case accuracyButton:
+            fetchData(display: 30, sortingType: SortingType.accuracy.rawValue)
+        case dateButton:
+            fetchData(display: 30, sortingType: SortingType.date.rawValue)
+        case highPriceButton:
+            fetchData(display: 30, sortingType: SortingType.highPrice.rawValue)
+        case lowPriceButton:
+            fetchData(display: 30, sortingType: SortingType.lowPrice.rawValue)
+        default:
+            return
+        }
     }
 
     func setupNavigation() {
@@ -132,30 +148,17 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
-    private func fetch(completion: @escaping (Result<ResultData, Error>) -> Void) {
+    private func fetchData(display: Int, sortingType: SortingType.RawValue) {
+        let networkManager = NetworkManager.shared
 
-        guard let clientID = Bundle.main.infoDictionary?["X-Naver-Client-Id"] as? String else {
-            completion(.failure(NetworkError.invalidClientID))
-            return
-        }
-        guard let clientSecret = Bundle.main.infoDictionary?["X-Naver-Client-Secret"] as? String else {
-            completion(.failure(NetworkError.invalidClientSecret))
-            return
-        }
-
-        let headers = HTTPHeaders([
-            HTTPHeader(name: "X-Naver-Client-Id", value: clientID),
-            HTTPHeader(name: "X-Naver-Client-Secret", value: clientSecret)
-        ])
-
-        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(keyword)&display=100"
-
-        AF.request(url, headers: headers).responseDecodable(of: ResultData.self) { response in
-            switch response.result {
+        guard let url = networkManager.getURL(keyword: keyword, display: display, sortingType: sortingType) else { return }
+        networkManager.fetch(url: url) { response in
+            switch response {
             case .success(let data):
-                completion(.success(data))
-            case .failure(_):
-                completion(.failure(NetworkError.failDecoding))
+                self.currentData = data
+                self.collectionView.reloadData()
+            case .failure(let error):
+                print(error)
             }
         }
     }
@@ -164,25 +167,27 @@ class ResultViewController: BaseViewController {
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        100
+        currentData.items.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
-        fetch { result in
-            switch result {
-            case .success(let data):
-                DispatchQueue.main.async {
-                    let count = FormatterManager.getFormatString(style: .decimal, value: data.total)
-                    self.resultCountLabel.text = "\(count)개의 검색 결과"
-                    cell.configureCell(with: data.items[indexPath.item])
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
+        cell.configureCell(with: currentData.items[indexPath.row])
         return cell
     }
 }
 
+enum SortingType: String {
+    case accuracy = "sim"
+    case date = "date"
+    case highPrice = "dsc"
+    case lowPrice = "asc"
+}
+
+
+enum ButtonTitle: String {
+    case accuracy = "정확도"
+    case date = "날짜순"
+    case highPrice = "가격높은순"
+    case lowPrice = "가격낮은순"
 }
