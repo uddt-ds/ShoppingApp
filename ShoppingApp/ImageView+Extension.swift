@@ -11,7 +11,7 @@ extension UIImageView {
     func designImageView(color: UIColor) {
         backgroundColor = color
         clipsToBounds = true
-//        contentMode = .scaleAspectFill
+        contentMode = .scaleAspectFill
     }
 
 }

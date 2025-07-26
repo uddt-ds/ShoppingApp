@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Alamofire
 
 class ResultViewController: BaseViewController {
 
@@ -26,7 +27,7 @@ class ResultViewController: BaseViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.backgroundColor = .orange
+        collectionView.backgroundColor = .clear
         return collectionView
     }()
 
@@ -108,6 +109,10 @@ class ResultViewController: BaseViewController {
         super.configureUI()
     }
 
+    private func addButtonTapped() {
+
+    }
+
     func setupNavigation() {
         navigationItem.title = "\(keyword)"
     }
@@ -126,17 +131,58 @@ class ResultViewController: BaseViewController {
 
         return layout
     }
+
+    private func fetch(completion: @escaping (Result<ResultData, Error>) -> Void) {
+
+        guard let clientID = Bundle.main.infoDictionary?["X-Naver-Client-Id"] as? String else {
+            completion(.failure(NetworkError.invalidClientID))
+            return
+        }
+        guard let clientSecret = Bundle.main.infoDictionary?["X-Naver-Client-Secret"] as? String else {
+            completion(.failure(NetworkError.invalidClientSecret))
+            return
+        }
+
+        let headers = HTTPHeaders([
+            HTTPHeader(name: "X-Naver-Client-Id", value: clientID),
+            HTTPHeader(name: "X-Naver-Client-Secret", value: clientSecret)
+        ])
+
+        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(keyword)&display=100"
+
+        AF.request(url, headers: headers).responseDecodable(of: ResultData.self) { response in
+            switch response.result {
+            case .success(let data):
+                completion(.success(data))
+            case .failure(_):
+                completion(.failure(NetworkError.failDecoding))
+            }
+        }
+    }
 }
 
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        20
+        100
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
+        fetch { result in
+            switch result {
+            case .success(let data):
+                DispatchQueue.main.async {
+                    let count = FormatterManager.getFormatString(style: .decimal, value: data.total)
+                    self.resultCountLabel.text = "\(count)개의 검색 결과"
+                    cell.configureCell(with: data.items[indexPath.item])
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
         return cell
     }
-    
+}
 
 }

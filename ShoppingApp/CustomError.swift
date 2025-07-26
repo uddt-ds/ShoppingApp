@@ -16,3 +16,17 @@ enum CustomError: Error {
         }
     }
 }
+
+enum NetworkError: Error {
+    case invalidClientID
+    case invalidClientSecret
+    case failDecoding
+
+    var title: String {
+        switch self {
+        case .invalidClientID: return "Client ID를 확인해주세요"
+        case .invalidClientSecret: return "Client Secret을 확인해주세요"
+        case .failDecoding: return "디코딩에 실패했습니다"
+        }
+    }
+}

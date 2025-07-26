@@ -7,14 +7,22 @@
 
 import Foundation
 
-struct ResultData {
+struct ResultData: Decodable {
     let total: Int
     let items: [Items]
 }
 
-struct Items {
+struct Items: Decodable {
     let title: String
     let image: String
     let lprice: String
     let mallName: String
+
+    var showTitle: String {
+        return title.replacingOccurrences(of: "</b>", with: "").replacingOccurrences(of: "<b>", with: "")
+    }
+
+    var wonPrice: String {
+        return FormatterManager.getFormatString(style: .decimal, value: Int(lprice) ?? 0)
+    }
 }

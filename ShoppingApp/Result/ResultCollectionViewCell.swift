@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ResultCollectionViewCell: UICollectionViewCell {
 
@@ -13,6 +14,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.designImageView(color: .black)
         imageView.addSubview(heartImageView)
+        imageView.layer.cornerRadius = 12
         return imageView
     }()
 
@@ -29,7 +31,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
 
     private let mallNameLabel: UILabel = {
         let label = UILabel()
-        label.font = .customFont(.subTitle)
+        label.font = .customFont(.small)
         label.textColor = .lightGray
         label.textAlignment = .left
         return label
@@ -57,7 +59,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
         stackView.axis = .vertical
         stackView.spacing = 4
         stackView.alignment = .leading
-        stackView.distribution = .fillProportionally
+        stackView.distribution = .fill
         return stackView
     }()
 
@@ -65,7 +67,6 @@ class ResultCollectionViewCell: UICollectionViewCell {
         super.init(frame: frame)
         configureHierarchy()
         configureLayout()
-        testLabel()
     }
 
     required init?(coder: NSCoder) {
@@ -76,16 +77,10 @@ class ResultCollectionViewCell: UICollectionViewCell {
         [imageView, labelStackView].forEach { contentView.addSubview($0) }
     }
 
-    private func testLabel() {
-        mallNameLabel.text = "상점 테스트"
-        titleLabel.text = "테스트\n테스트"
-        priceLabel.text = "100,000"
-    }
-
     private func configureLayout() {
         imageView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(contentView)
-            make.bottom.equalTo(labelStackView.snp.top).offset(-4)
+            make.height.equalTo(imageView.snp.width)
         }
 
         heartImageView.snp.makeConstraints { make in
@@ -98,7 +93,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
         }
 
         titleLabel.snp.makeConstraints { make in
-            make.height.lessThanOrEqualTo(38)
+            make.height.greaterThanOrEqualTo(18)
         }
 
         priceLabel.snp.makeConstraints { make in
@@ -106,9 +101,23 @@ class ResultCollectionViewCell: UICollectionViewCell {
         }
 
         labelStackView.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalTo(contentView)
-            make.height.equalTo(68)
+            make.top.equalTo(imageView.snp.bottom).offset(4)
+            make.leading.trailing.equalTo(contentView)
+            make.height.greaterThanOrEqualTo(48)
         }
     }
 
+    func configureCell(with data: Items) {
+        guard let url = URL(string: data.image) else {
+            print("잘못된 URL입니다")
+            return
+        }
+
+        imageView.kf.setImage(with: url, options: [
+            .keepCurrentImageWhileLoading
+        ])
+        mallNameLabel.text = data.mallName
+        titleLabel.text = data.showTitle
+        priceLabel.text = data.wonPrice
+    }
 }
