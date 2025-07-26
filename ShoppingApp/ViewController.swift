@@ -33,7 +33,7 @@ class ViewController: BaseViewController {
     let subTitle: UILabel = {
         let label = UILabel()
         label.text = "쇼핑하구팡"
-        label.font = .customFont(.subTitle)
+        label.font = .customFont(.boldSubTitle)
         label.textColor = .main
         return label
     }()
@@ -77,6 +77,8 @@ class ViewController: BaseViewController {
 
     private func setupNavigation() {
         navigationItem.title = "\(nickname)의 쇼핑쇼핑"
+        navigationController?.navigationBar.tintColor = .main
+        navigationItem.backButtonTitle = ""
     }
 }
 

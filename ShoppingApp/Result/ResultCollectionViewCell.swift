@@ -20,10 +20,10 @@ class ResultCollectionViewCell: UICollectionViewCell {
 
     private let heartImageView: UIImageView = {
         let imageView = UIImageView()
-        let image = UIImage(systemName: "heart")
-        imageView.designImageView(color: .white)
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 22, weight: .light)
+        let image = UIImage(systemName: "heart", withConfiguration: symbolConfiguration)
+        imageView.designImageView(color: .white, mode: .center)
         imageView.image = image
-
         imageView.tintColor = .black
         imageView.layer.cornerRadius = 18
         return imageView

@@ -8,10 +8,9 @@
 import UIKit
 
 extension UIImageView {
-    func designImageView(color: UIColor) {
+    func designImageView(color: UIColor, mode: UIView.ContentMode = .scaleAspectFill) {
         backgroundColor = color
         clipsToBounds = true
-        contentMode = .scaleAspectFill
+        contentMode = mode
     }
-
 }
