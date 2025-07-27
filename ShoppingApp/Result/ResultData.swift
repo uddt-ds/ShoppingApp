@@ -23,6 +23,6 @@ struct Items: Decodable {
     }
 
     var wonPrice: String {
-        return FormatterManager.getFormatString(style: .decimal, value: Int(lprice) ?? 0)
+        return FormatterManager.getFormatString(style: .decimal, value: Int(lprice) ?? 0) + "원"
     }
 }

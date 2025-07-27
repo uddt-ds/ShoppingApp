@@ -18,10 +18,10 @@ class ResultViewController: BaseViewController {
         return label
     }()
 
-    let accuracyButton = CustomButton(title: ButtonTitle.accuracy.rawValue)
-    let dateButton = CustomButton(title: ButtonTitle.date.rawValue)
-    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.rawValue)
-    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue)
+    let accuracyButton = CustomButton(title: ButtonTitle.accuracy.rawValue, tag: 0)
+    let dateButton = CustomButton(title: ButtonTitle.date.rawValue, tag: 1)
+    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.rawValue, tag: 2)
+    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue, tag: 3)
 
     var currentData: ResultData = .init(total: 0, items: [])
 
@@ -58,7 +58,7 @@ class ResultViewController: BaseViewController {
         setupNavigation()
         addButtonTapped()
         collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
-        fetchData(display: 30, sortingType: SortingType.accuracy.rawValue)
+        fetchData(sortingType: SortingType.accuracy.rawValue)
     }
 
     override func configureViewHierarchy() {
@@ -74,21 +74,28 @@ class ResultViewController: BaseViewController {
             make.height.equalTo(20)
         }
 
-        accuracyButton.snp.makeConstraints { make in
-            make.height.equalTo(40)
+        // stackView 안에 들어가는 버튼은 동적으로 크기가 바뀌는게 아니라서 forEach로 처리
+        [accuracyButton, dateButton, highPriceButton, lowPriceButton].forEach {
+            $0.snp.makeConstraints { make in
+                make.height.equalTo(40)
+            }
         }
 
-        dateButton.snp.makeConstraints { make in
-            make.height.equalTo(40)
-        }
-
-        highPriceButton.snp.makeConstraints { make in
-            make.height.equalTo(40)
-        }
-
-        lowPriceButton.snp.makeConstraints { make in
-            make.height.equalTo(40)
-        }
+//        accuracyButton.snp.makeConstraints { make in
+//            make.height.equalTo(40)
+//        }
+//
+//        dateButton.snp.makeConstraints { make in
+//            make.height.equalTo(40)
+//        }
+//
+//        highPriceButton.snp.makeConstraints { make in
+//            make.height.equalTo(40)
+//        }
+//
+//        lowPriceButton.snp.makeConstraints { make in
+//            make.height.equalTo(40)
+//        }
 
         buttonStackView.snp.makeConstraints { make in
             make.top.equalTo(resultCountLabel.snp.bottom).offset(8)
@@ -115,18 +122,10 @@ class ResultViewController: BaseViewController {
     }
 
     @objc func buttonTapped(_ sender: UIButton) {
-        switch sender {
-        case accuracyButton:
-            fetchData(display: 30, sortingType: SortingType.accuracy.rawValue)
-        case dateButton:
-            fetchData(display: 30, sortingType: SortingType.date.rawValue)
-        case highPriceButton:
-            fetchData(display: 30, sortingType: SortingType.highPrice.rawValue)
-        case lowPriceButton:
-            fetchData(display: 30, sortingType: SortingType.lowPrice.rawValue)
-        default:
-            return
-        }
+        let sortingTypeArr = SortingType.allCases
+
+        let selectedType = sortingTypeArr[sender.tag]
+        fetchData(sortingType: selectedType.rawValue)
     }
 
     func setupNavigation() {
@@ -148,7 +147,7 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
-    private func fetchData(display: Int, sortingType: SortingType.RawValue) {
+    private func fetchData(sortingType: SortingType.RawValue, display: Int = QueryData.displayNum) {
         let networkManager = NetworkManager.shared
 
         guard let url = networkManager.getURL(keyword: keyword, display: display, sortingType: sortingType) else { return }
@@ -177,13 +176,22 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
 }
 
-enum SortingType: String {
+enum SortingType: String, CaseIterable {
     case accuracy = "sim"
     case date = "date"
     case highPrice = "dsc"
     case lowPrice = "asc"
-}
 
+    // 별도의 struct 또는 enum으로 분리가 되어 있는게 더 유지보수가 유리한 구조일거라고 판단
+//    var buttonTitle: String {
+//        switch self {
+//        case .accuracy: return "정확도"
+//        case .date: return "날짜순"
+//        case .highPrice: return "가격높은순"
+//        case .lowPrice: return "가격낮은순"
+//        }
+//    }
+}
 
 enum ButtonTitle: String {
     case accuracy = "정확도"

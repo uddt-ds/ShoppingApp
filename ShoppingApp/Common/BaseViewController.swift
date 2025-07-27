@@ -13,7 +13,7 @@ class BaseViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = .bg
-        
+
         configureUI()
         configureViewHierarchy()
         configureLayout()

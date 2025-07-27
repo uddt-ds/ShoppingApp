@@ -20,13 +20,25 @@ enum CustomError: Error {
 enum NetworkError: Error {
     case invalidClientID
     case invalidClientSecret
+    case invalidURL
     case failDecoding
+
 
     var title: String {
         switch self {
         case .invalidClientID: return "Client ID를 확인해주세요"
         case .invalidClientSecret: return "Client Secret을 확인해주세요"
+        case .invalidURL: return "잘못된 URL입니다"
         case .failDecoding: return "디코딩에 실패했습니다"
         }
     }
+}
+
+struct DetailError: Decodable {
+    let error: ServerError
+}
+
+struct ServerError: Decodable {
+    let errorMessage: String
+    let errorCode: String
 }

@@ -109,7 +109,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
 
     func configureCell(with data: Items) {
         guard let url = URL(string: data.image) else {
-            print("잘못된 URL입니다")
+            print(NetworkError.invalidURL.title)
             return
         }
 
@@ -119,5 +119,10 @@ class ResultCollectionViewCell: UICollectionViewCell {
         mallNameLabel.text = data.mallName
         titleLabel.text = data.showTitle
         priceLabel.text = data.wonPrice
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.image = nil
     }
 }
