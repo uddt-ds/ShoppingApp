@@ -19,9 +19,9 @@ struct NetworkManager {
 
     func getURL(keyword: String, display: Int, sortingType: String) -> URL? {
         var components = URLComponents()
-        components.scheme = "https"
-        components.host = "openapi.naver.com"
-        components.path = "/v1/search/shop.json"
+        components.scheme = APIData.scheme.rawValue
+        components.host = APIData.host.rawValue
+        components.path = APIData.path.rawValue
         components.queryItems = [
            URLQueryItem(name: "query", value: keyword),
            URLQueryItem(name: "display", value: "\(display)"),
@@ -47,6 +47,7 @@ struct NetworkManager {
             HTTPHeader(name: "X-Naver-Client-Secret", value: clientSecret)
         ])
 
+        // TODO: 에러코드를 파싱해서, 에러 코드에 대한 대응을 어떻게 처리해야할까 고민해보기//
         AF.request(url, headers: headers).responseDecodable(of: ResultData.self) { response in
             switch response.result {
             case .success(let data):
