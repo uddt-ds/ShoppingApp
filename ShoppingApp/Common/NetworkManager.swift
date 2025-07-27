@@ -17,7 +17,7 @@ struct NetworkManager {
 
     private init() { }
 
-    func getURL(keyword: String, display: Int, sortingType: String) -> URL? {
+    func getURL(keyword: String, display: Int, sortingType: SortingType.RawValue) -> URL? {
         var components = URLComponents()
         components.scheme = APIData.scheme.rawValue
         components.host = APIData.host.rawValue
@@ -42,18 +42,27 @@ struct NetworkManager {
             return
         }
 
-        let headers = HTTPHeaders([
-            HTTPHeader(name: "X-Naver-Client-Id", value: clientID),
-            HTTPHeader(name: "X-Naver-Client-Secret", value: clientSecret)
-        ])
+        let headers: HTTPHeaders = [
+            "X-Naver-Client-Id": clientID,
+            "X-Naver-Client-Secret": clientSecret
+        ]
 
         // TODO: 에러코드를 파싱해서, 에러 코드에 대한 대응을 어떻게 처리해야할까 고민해보기//
         AF.request(url, headers: headers).responseDecodable(of: ResultData.self) { response in
             switch response.result {
             case .success(let data):
                 completion(.success(data))
-            case .failure(_):
-                completion(.failure(NetworkError.failDecoding))
+            case .failure(let error):
+                if let data = response.data {
+                    do {
+                        let errorData = try JSONDecoder().decode(ServerError.self, from: data)
+                        print(errorData)
+                        print(error)
+                    }
+                    catch {
+                        completion(.failure(error))
+                    }
+                }
             }
         }
     }
