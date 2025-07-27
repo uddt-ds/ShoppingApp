@@ -47,7 +47,6 @@ struct NetworkManager {
             "X-Naver-Client-Secret": clientSecret
         ]
 
-        // TODO: 에러코드를 파싱해서, 에러 코드에 대한 대응을 어떻게 처리해야할까 고민해보기//
         AF.request(url, headers: headers).responseDecodable(of: ResultData.self) { response in
             switch response.result {
             case .success(let data):
@@ -56,8 +55,25 @@ struct NetworkManager {
                 if let data = response.data {
                     do {
                         let errorData = try JSONDecoder().decode(ServerError.self, from: data)
-                        print(errorData)
-                        print(error)
+                        // TODO: 에러코드 분기 하드코딩 개선 필요
+                        switch errorData.errorCode {
+                        case String(describing: ServerErrorCode.SE01):
+                            print(ServerErrorCode.SE01.description)
+                        case String(describing: ServerErrorCode.SE02):
+                            print(ServerErrorCode.SE02.description)
+                        case String(describing: ServerErrorCode.SE03):
+                            print(ServerErrorCode.SE03.description)
+                        case String(describing: ServerErrorCode.SE04):
+                            print(ServerErrorCode.SE04.description)
+                        case String(describing: ServerErrorCode.SE05):
+                            print(ServerErrorCode.SE05.description)
+                        case String(describing: ServerErrorCode.SE06):
+                            print(ServerErrorCode.SE06.description)
+                        case String(describing: ServerErrorCode.SE99):
+                            print(ServerErrorCode.SE99.description)
+                        default:
+                            return
+                        }
                     }
                     catch {
                         completion(.failure(error))
