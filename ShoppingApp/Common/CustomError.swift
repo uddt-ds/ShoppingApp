@@ -44,13 +44,25 @@ struct ServerError: Decodable {
 }
 
 enum ServerErrorCode: String {
-    case SE01 = "400Incorrect query request (잘못된 쿼리요청입니다.)"
-    case SE02 = "400Invalid display value (부적절한 display 값입니다.)"
-    case SE03 = "400Invalid start value (부적절한 start 값입니다.)"
-    case SE04 = "400Invalid sort value (부적절한 sort 값입니다.)"
-    case SE05 = "404Invalid search api (존재하지 않는 검색 api 입니다.)"
-    case SE06 = "400Malformed encoding (잘못된 형식의 인코딩입니다.)"
-    case SE99 = "500System Error (시스템 에러)"
+    case SE01
+    case SE02
+    case SE03
+    case SE04
+    case SE05
+    case SE06
+    case SE99
+
+    var errorMessage: String {
+        switch self {
+        case .SE01: return "400Incorrect query request (잘못된 쿼리요청입니다.)"
+        case .SE02: return "400Invalid display value (부적절한 display 값입니다.)"
+        case .SE03: return "400Invalid start value (부적절한 start 값입니다.)"
+        case .SE04: return "400Invalid sort value (부적절한 sort 값입니다.)"
+        case .SE05: return "404Invalid search api (존재하지 않는 검색 api 입니다.)"
+        case .SE06: return "400Malformed encoding (잘못된 형식의 인코딩입니다.)"
+        case .SE99: return "500System Error (시스템 에러)"
+        }
+    }
 
     var description: String {
         switch self {

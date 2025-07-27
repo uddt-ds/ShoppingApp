@@ -55,24 +55,23 @@ struct NetworkManager {
                 if let data = response.data {
                     do {
                         let errorData = try JSONDecoder().decode(ServerError.self, from: data)
-                        // TODO: 에러코드 분기 하드코딩 개선 필요
-                        switch errorData.errorCode {
-                        case String(describing: ServerErrorCode.SE01):
-                            print(ServerErrorCode.SE01.description)
-                        case String(describing: ServerErrorCode.SE02):
-                            print(ServerErrorCode.SE02.description)
-                        case String(describing: ServerErrorCode.SE03):
-                            print(ServerErrorCode.SE03.description)
-                        case String(describing: ServerErrorCode.SE04):
-                            print(ServerErrorCode.SE04.description)
-                        case String(describing: ServerErrorCode.SE05):
-                            print(ServerErrorCode.SE05.description)
-                        case String(describing: ServerErrorCode.SE06):
-                            print(ServerErrorCode.SE06.description)
-                        case String(describing: ServerErrorCode.SE99):
-                            print(ServerErrorCode.SE99.description)
-                        default:
-                            return
+                        if let code = ServerErrorCode(rawValue: errorData.errorCode) {
+                            switch code {
+                            case .SE01:
+                                print(code.description)
+                            case .SE02:
+                                print(code.description)
+                            case .SE03:
+                                print(code.description)
+                            case .SE04:
+                                print(code.description)
+                            case .SE05:
+                                print(code.description)
+                            case .SE06:
+                                print(code.description)
+                            case .SE99:
+                                print(code.description)
+                            }
                         }
                     }
                     catch {
