@@ -25,8 +25,9 @@ class ResultViewController: BaseViewController {
 
     var currentData: ResultData = .init(total: 0, items: [])
     var currentItemData: [Items] = []
-    var start = 1
     var currentCategory: String = "sim"
+    var start = 1
+    var isEnd: Bool = false
 
 
     private lazy var collectionView: UICollectionView = {
@@ -127,11 +128,13 @@ class ResultViewController: BaseViewController {
 
     @objc func buttonTapped(_ sender: UIButton) {
         let sortingTypeArr = SortingType.allCases
-
         let selectedType = sortingTypeArr[sender.tag]
+
+        start = 1
+        isEnd = false
         currentCategory = selectedType.rawValue
         currentItemData.removeAll()
-        start = 1
+
         fetchData(sortingType: currentCategory)
     }
 
@@ -164,16 +167,33 @@ class ResultViewController: BaseViewController {
         networkManager.fetch(url: url) { response in
             switch response {
             case .success(let data):
-                self.currentData = data
-                self.currentItemData.append(contentsOf: data.items)
-                self.collectionView.reloadData()
+                if !self.isEnd {
+                    self.currentData = data
+                    self.currentItemData.append(contentsOf: data.items)
+                    self.collectionView.reloadData()
+                }
 
                 if self.start == 1 {
                     self.collectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
                 }
+
+                DispatchQueue.main.async {
+                    self.resultCountLabel.text = self.currentData.totalCount
+                    print(self.currentData.totalCount)
+                    print(self.start)
+                }
+
             case .failure(let error):
                 print(error)
             }
+        }
+    }
+
+    func checkLastPage() -> Bool {
+        if start <= currentData.total {
+            return true
+        } else {
+            return false
         }
     }
 }
@@ -191,10 +211,13 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.row == (currentItemData.count - 3) {
+        if indexPath.row == (currentItemData.count - 3) && !isEnd {
             start += QueryData.displayNum
-
             fetchData(sortingType: currentCategory)
+        }
+
+        if start <= currentData.total {
+            isEnd = checkLastPage()
         }
     }
 }

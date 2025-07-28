@@ -10,6 +10,10 @@ import Foundation
 struct ResultData: Decodable {
     let total: Int
     let items: [Items]
+
+    var totalCount: String {
+        return FormatterManager.getFormatString(style: .decimal, value: total) + "개의 검색결과"
+    }
 }
 
 struct Items: Decodable {
