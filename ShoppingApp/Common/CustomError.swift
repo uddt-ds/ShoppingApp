@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CustomError: Error {
+enum SearchError: Error {
     case shortInput
 
     var title: String {

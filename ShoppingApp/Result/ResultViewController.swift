@@ -26,7 +26,7 @@ class ResultViewController: BaseViewController {
 
     var currentData: ResultData = .init(total: 0, items: [])
     var currentItemData: [Items] = []
-    var currentCategory: String = "sim"
+    var currentCategory: SortingType = .accuracy
     var start = 1
     var isEnd: Bool = false
 
@@ -65,7 +65,7 @@ class ResultViewController: BaseViewController {
         setupNavigation()
         addButtonTapped()
         collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
-        fetchData(sortingType: SortingType.accuracy.rawValue)
+        fetchData(sortingType: SortingType.accuracy)
     }
 
     override func configureViewHierarchy() {
@@ -81,28 +81,11 @@ class ResultViewController: BaseViewController {
             make.height.equalTo(20)
         }
 
-        // stackView 안에 들어가는 버튼은 동적으로 크기가 바뀌는게 아니라서 forEach로 처리
         [accuracyButton, dateButton, highPriceButton, lowPriceButton].forEach {
             $0.snp.makeConstraints { make in
                 make.height.equalTo(40)
             }
         }
-
-//        accuracyButton.snp.makeConstraints { make in
-//            make.height.equalTo(40)
-//        }
-//
-//        dateButton.snp.makeConstraints { make in
-//            make.height.equalTo(40)
-//        }
-//
-//        highPriceButton.snp.makeConstraints { make in
-//            make.height.equalTo(40)
-//        }
-//
-//        lowPriceButton.snp.makeConstraints { make in
-//            make.height.equalTo(40)
-//        }
 
         buttonStackView.snp.makeConstraints { make in
             make.top.equalTo(resultCountLabel.snp.bottom).offset(8)
@@ -134,7 +117,7 @@ class ResultViewController: BaseViewController {
 
         start = 1
         isEnd = false
-        currentCategory = selectedType.rawValue
+        currentCategory = selectedType
         currentItemData.removeAll()
 
         fetchData(sortingType: currentCategory)
@@ -159,11 +142,10 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
-    // 현재 데이터가 마지막 페이지의 데이터인지 어디서 판단을 해야할까?
-    private func fetchData(sortingType: String, display: Int = QueryData.displayNum) {
+    private func fetchData(sortingType: SortingType, display: Int = QueryData.displayNum) {
         let networkManager = NetworkManager.shared
 
-        guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: currentCategory) else {
+        guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: sortingType.rawValue) else {
             return
         }
 
@@ -183,7 +165,6 @@ class ResultViewController: BaseViewController {
                 DispatchQueue.main.async {
                     self.resultCountLabel.text = self.currentData.totalCount
                     print(self.currentData.totalCount)
-                    print(self.start)
                 }
 
                 if self.start + QueryData.displayNum > self.currentData.total {
@@ -199,14 +180,11 @@ class ResultViewController: BaseViewController {
             }
         }
     }
-
-    func checkLastPage() -> Bool {
-        start + QueryData.displayNum > currentData.total ? true : false
-    }
 }
 
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        print(#function, indexPaths)
         for indexPath in indexPaths {
             if indexPath.row == (currentItemData.count - 3) && !isEnd {
                 start += QueryData.displayNum

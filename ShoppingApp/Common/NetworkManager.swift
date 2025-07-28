@@ -10,10 +10,6 @@ import Alamofire
 
 struct NetworkManager {
     static let shared = NetworkManager()
-//
-//    let clientID = (Bundle.main.infoDictionary?["X-Naver-Client-Id"] as? String) ?? ""
-//
-//    let clientSecret = (Bundle.main.infoDictionary?["X-Naver-Client-Secret"] as? String) ?? ""
 
     private init() { }
 

@@ -85,7 +85,7 @@ class ViewController: BaseViewController {
 extension ViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let text = searchBar.text, text.count >= 2 else {
-            super.showAlert(title: CustomError.shortInput.title)
+            super.showAlert(title: SearchError.shortInput.title)
             return
         }
 
