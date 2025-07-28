@@ -189,7 +189,7 @@ class ResultViewController: BaseViewController {
                 if self.start + QueryData.displayNum > self.currentData.total {
                     self.isEnd = true
 
-                    if self.start != 1 {
+                    if self.start != 1 || self.start == 1 && ((self.start - 30) * -1) > self.currentData.total {
                         self.view.makeToast("마지막 페이지입니다", duration: 2.0, position: .bottom)
                     }
                 }
