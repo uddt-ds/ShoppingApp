@@ -10,6 +10,7 @@
 		9BF1F7CA2E33651400A73D6F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9BF1F7C92E33651400A73D6F /* SnapKit */; };
 		9BF1FA892E33AF5200A73D6F /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 9BF1FA882E33AF5200A73D6F /* Alamofire */; };
 		9BF1FB052E34636300A73D6F /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9BF1FB042E34636300A73D6F /* Kingfisher */; };
+		9BF1FE152E3823D400A73D6F /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 9BF1FE142E3823D400A73D6F /* Toast */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BF1FE152E3823D400A73D6F /* Toast in Frameworks */,
 				9BF1FB052E34636300A73D6F /* Kingfisher in Frameworks */,
 				9BF1F7CA2E33651400A73D6F /* SnapKit in Frameworks */,
 				9BF1FA892E33AF5200A73D6F /* Alamofire in Frameworks */,
@@ -90,6 +92,7 @@
 				9BF1F7C92E33651400A73D6F /* SnapKit */,
 				9BF1FA882E33AF5200A73D6F /* Alamofire */,
 				9BF1FB042E34636300A73D6F /* Kingfisher */,
+				9BF1FE142E3823D400A73D6F /* Toast */,
 			);
 			productName = ShoppingApp;
 			productReference = 9BF1F7712E335EFF00A73D6F /* ShoppingApp.app */;
@@ -123,6 +126,7 @@
 				9BF1F7C82E33651400A73D6F /* XCRemoteSwiftPackageReference "SnapKit" */,
 				9BF1FA872E33AF5200A73D6F /* XCRemoteSwiftPackageReference "Alamofire" */,
 				9BF1FB032E34636300A73D6F /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				9BF1FE132E3823D400A73D6F /* XCRemoteSwiftPackageReference "Toast-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9BF1F7722E335EFF00A73D6F /* Products */;
@@ -386,6 +390,14 @@
 				minimumVersion = 8.5.0;
 			};
 		};
+		9BF1FE132E3823D400A73D6F /* XCRemoteSwiftPackageReference "Toast-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scalessec/Toast-Swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -403,6 +415,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9BF1FB032E34636300A73D6F /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		9BF1FE142E3823D400A73D6F /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9BF1FE132E3823D400A73D6F /* XCRemoteSwiftPackageReference "Toast-Swift" */;
+			productName = Toast;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

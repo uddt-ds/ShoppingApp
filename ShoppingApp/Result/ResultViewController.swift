@@ -35,6 +35,7 @@ class ResultViewController: BaseViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.prefetchDataSource = self
         collectionView.backgroundColor = .clear
         return collectionView
     }()
@@ -185,6 +186,14 @@ class ResultViewController: BaseViewController {
                     print(self.start)
                 }
 
+                if self.start + QueryData.displayNum > self.currentData.total {
+                    self.isEnd = true
+
+                    if self.start != 1 {
+                        self.view.makeToast("마지막 페이지입니다", duration: 2.0, position: .bottom)
+                    }
+                }
+
             case .failure(let error):
                 print(error)
             }
@@ -196,7 +205,16 @@ class ResultViewController: BaseViewController {
     }
 }
 
-extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            if indexPath.row == (currentItemData.count - 3) && !isEnd {
+                start += QueryData.displayNum
+                fetchData(sortingType: currentCategory)
+            }
+        }
+    }
+    
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         currentItemData.count
@@ -206,20 +224,5 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
         cell.configureCell(with: currentItemData[indexPath.row])
         return cell
-    }
-
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-
-        if indexPath.row == (currentItemData.count - 3) && !isEnd {
-            if checkLastPage() {
-                isEnd = true
-                return
-            }
-
-            let nextItem = start + QueryData.displayNum
-            start = nextItem
-
-            fetchData(sortingType: currentCategory)
-        }
     }
 }
