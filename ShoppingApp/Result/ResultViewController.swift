@@ -7,6 +7,7 @@
 
 import UIKit
 import Alamofire
+import Toast
 
 class ResultViewController: BaseViewController {
 
@@ -157,6 +158,7 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
+    // 현재 데이터가 마지막 페이지의 데이터인지 어디서 판단을 해야할까?
     private func fetchData(sortingType: String, display: Int = QueryData.displayNum) {
         let networkManager = NetworkManager.shared
 
@@ -190,11 +192,7 @@ class ResultViewController: BaseViewController {
     }
 
     func checkLastPage() -> Bool {
-        if start <= currentData.total {
-            return true
-        } else {
-            return false
-        }
+        start + QueryData.displayNum > currentData.total ? true : false
     }
 }
 
@@ -211,13 +209,17 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.row == (currentItemData.count - 3) && !isEnd {
-            start += QueryData.displayNum
-            fetchData(sortingType: currentCategory)
-        }
 
-        if start <= currentData.total {
-            isEnd = checkLastPage()
+        if indexPath.row == (currentItemData.count - 3) && !isEnd {
+            if checkLastPage() {
+                isEnd = true
+                return
+            }
+
+            let nextItem = start + QueryData.displayNum
+            start = nextItem
+
+            fetchData(sortingType: currentCategory)
         }
     }
 }
