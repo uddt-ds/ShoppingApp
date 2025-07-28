@@ -14,5 +14,5 @@ enum APIData: String {
 }
 
 enum QueryData {
-    static let displayNum = 100
+    static let displayNum = 30
 }

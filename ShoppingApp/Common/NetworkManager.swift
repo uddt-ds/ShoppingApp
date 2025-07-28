@@ -17,7 +17,7 @@ struct NetworkManager {
 
     private init() { }
 
-    func getURL(keyword: String, display: Int, sortingType: SortingType.RawValue) -> URL? {
+    func getURL(keyword: String, display: Int, start: Int, sortingType: SortingType.RawValue) -> URL? {
         var components = URLComponents()
         components.scheme = APIData.scheme.rawValue
         components.host = APIData.host.rawValue
@@ -25,6 +25,7 @@ struct NetworkManager {
         components.queryItems = [
            URLQueryItem(name: "query", value: keyword),
            URLQueryItem(name: "display", value: "\(display)"),
+           URLQueryItem(name: "start", value: "\(start)"),
            URLQueryItem(name: "sort", value: sortingType)
         ]
 

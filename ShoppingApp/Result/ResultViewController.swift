@@ -24,6 +24,10 @@ class ResultViewController: BaseViewController {
     let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue, tag: 3)
 
     var currentData: ResultData = .init(total: 0, items: [])
+    var currentItemData: [Items] = []
+    var start = 1
+    var currentCategory: String = "sim"
+
 
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
@@ -125,7 +129,10 @@ class ResultViewController: BaseViewController {
         let sortingTypeArr = SortingType.allCases
 
         let selectedType = sortingTypeArr[sender.tag]
-        fetchData(sortingType: selectedType.rawValue)
+        currentCategory = selectedType.rawValue
+        currentItemData.removeAll()
+        start = 1
+        fetchData(sortingType: currentCategory)
     }
 
     func setupNavigation() {
@@ -147,15 +154,23 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
-    private func fetchData(sortingType: SortingType.RawValue, display: Int = QueryData.displayNum) {
+    private func fetchData(sortingType: String, display: Int = QueryData.displayNum) {
         let networkManager = NetworkManager.shared
 
-        guard let url = networkManager.getURL(keyword: keyword, display: display, sortingType: sortingType) else { return }
+        guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: currentCategory) else {
+            return
+        }
+
         networkManager.fetch(url: url) { response in
             switch response {
             case .success(let data):
                 self.currentData = data
+                self.currentItemData.append(contentsOf: data.items)
                 self.collectionView.reloadData()
+
+                if self.start == 1 {
+                    self.collectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+                }
             case .failure(let error):
                 print(error)
             }
@@ -164,14 +179,22 @@ class ResultViewController: BaseViewController {
 }
 
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        currentData.items.count
+        currentItemData.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
-        cell.configureCell(with: currentData.items[indexPath.row])
+        cell.configureCell(with: currentItemData[indexPath.row])
         return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.row == (currentItemData.count - 3) {
+            start += QueryData.displayNum
+
+            fetchData(sortingType: currentCategory)
+        }
     }
 }
