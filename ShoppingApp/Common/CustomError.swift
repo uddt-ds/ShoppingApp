@@ -83,6 +83,7 @@ enum ServerErrorCode: String {
 
     var userMessage: String {
         switch self {
+        case .SE99: return "서버 점검 중입니다. 공지사항을 확인해주세요"
         default: return "서버와의 연결이 원활하지 않습니다"
         }
     }
