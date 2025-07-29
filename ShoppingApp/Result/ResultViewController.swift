@@ -36,6 +36,7 @@ class ResultViewController: BaseViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.prefetchDataSource = self
+        collectionView.tag = 1
         collectionView.backgroundColor = .clear
         return collectionView
     }()
@@ -44,6 +45,7 @@ class ResultViewController: BaseViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeHorizontalCollectionViewFlowLayout())
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.tag = 2
         collectionView.backgroundColor = .clear
         return collectionView
     }()
@@ -223,26 +225,25 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == verticalCollectionView {
-            return currentItemData.count
-        } else if collectionView == horizontalCollectionView {
-            return 10
+        switch collectionView.tag {
+        case 1: return currentItemData.count
+        case 2: return 10
+        default: return 0
         }
-
-        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        if collectionView == verticalCollectionView {
+        switch collectionView.tag {
+        case 1:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
             cell.configureCell(with: currentItemData[indexPath.row])
             return cell
-        } else if collectionView == horizontalCollectionView {
+        case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SuggestCollectionViewCell.self), for: indexPath) as? SuggestCollectionViewCell else { return .init() }
             return cell
+        default:
+            return UICollectionViewCell()
         }
-
-        return UICollectionViewCell()
     }
 }
