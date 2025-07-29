@@ -24,9 +24,14 @@ class ResultViewController: BaseViewController {
     let highPriceButton = CustomButton(title: ButtonTitle.highPrice.rawValue, tag: 2)
     let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue, tag: 3)
 
+    let networkManager = NetworkManager.shared
+
     var currentData: ResultData = .init(total: 0, items: [])
     var currentItemData: [Items] = []
     var currentCategory: SortingType = .accuracy
+
+    var suggestItemData: [Items] = []
+
     var start = 1
     var isEnd: Bool = false
 
@@ -76,6 +81,7 @@ class ResultViewController: BaseViewController {
         addButtonTapped()
         verticalCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
         horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
+        fetchSuggestData(sortingType: SortingType.accuracy)
         fetchData(sortingType: SortingType.accuracy)
     }
 
@@ -174,7 +180,7 @@ class ResultViewController: BaseViewController {
     }
 
     private func fetchData(sortingType: SortingType, display: Int = QueryData.displayNum) {
-        let networkManager = NetworkManager.shared
+        print(#function)
 
         guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: sortingType.rawValue) else {
             return
@@ -207,7 +213,47 @@ class ResultViewController: BaseViewController {
                 }
 
             case .failure(let error):
-                print(error)
+                if let searchError = error as? SearchError {
+                    switch searchError {
+                    case .serverError:
+                        if let code = searchError.serverErrorLog {
+                            print(code.rawValue)
+                            print(code.description)
+                        }
+
+                        self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
+                    default:
+                        return
+                    }
+                }
+            }
+        }
+    }
+
+    private func fetchSuggestData(sortingType: SortingType, display: Int = QueryData.displayNum) {
+
+        let keyword = "공룡"
+        guard let url = networkManager.getURL(keyword: keyword, display: display, start: 1, sortingType: SortingType.accuracy.rawValue) else { return }
+
+        networkManager.fetch(url: url) { response in
+            switch response {
+            case .success(let data):
+                self.suggestItemData = data.items
+                self.horizontalCollectionView.reloadData()
+            case .failure(let error):
+                if let searchError = error as? SearchError {
+                    switch searchError {
+                    case .serverError:
+                        if let code = searchError.serverErrorLog {
+                            print(code.rawValue)
+                            print(code.description)
+                        }
+
+                        self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
+                    default:
+                        return
+                    }
+                }
             }
         }
     }
@@ -227,7 +273,7 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch collectionView.tag {
         case 1: return currentItemData.count
-        case 2: return 10
+        case 2: return suggestItemData.count
         default: return 0
         }
     }
@@ -241,6 +287,7 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SuggestCollectionViewCell.self), for: indexPath) as? SuggestCollectionViewCell else { return .init() }
+            cell.configureCell(data: suggestItemData[indexPath.row])
             return cell
         default:
             return UICollectionViewCell()

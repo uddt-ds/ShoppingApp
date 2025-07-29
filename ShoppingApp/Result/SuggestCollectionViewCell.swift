@@ -33,4 +33,11 @@ class SuggestCollectionViewCell: BaseCollectionViewCell {
     override func configureView() {
         super.configureView()
     }
+
+    func configureCell(data: Items) {
+        guard let url = URL(string: data.image) else { return }
+        imageView.kf.setImage(with: url, options: [
+            .keepCurrentImageWhileLoading
+        ])
+    }
 }
