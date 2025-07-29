@@ -9,11 +9,20 @@ import Foundation
 
 enum SearchError: Error {
     case shortInput
+    case serverError(code: String)
 
     var title: String {
         switch self {
         case .shortInput: return "2글자 이상 입력해주세요"
+        case .serverError(let code): return "에러 발생 \(code)"
         }
+    }
+
+    var serverErrorLog: ServerErrorCode? {
+        if case .serverError(let code) = self {
+            return ServerErrorCode(rawValue: code)
+        }
+        return nil
     }
 }
 
@@ -32,10 +41,6 @@ enum NetworkError: Error {
         case .failDecoding: return "디코딩에 실패했습니다"
         }
     }
-}
-
-struct DetailError: Decodable {
-    let error: ServerError
 }
 
 struct ServerError: Decodable {
@@ -73,6 +78,12 @@ enum ServerErrorCode: String {
         case .SE05: return "API 요청 URL에 오타가 있는지 확인합니다."
         case .SE06: return "검색어를 UTF-8로 인코딩합니다."
         case .SE99: return #"서버 내부에 오류가 발생했습니다. "개발자 포럼"에 오류를 신고해 주십시오."#
+        }
+    }
+
+    var userMessage: String {
+        switch self {
+        default: return "서버와의 연결이 원활하지 않습니다"
         }
     }
 }
