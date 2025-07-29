@@ -31,11 +31,19 @@ class ResultViewController: BaseViewController {
     var isEnd: Bool = false
 
 
-    private lazy var collectionView: UICollectionView = {
+    private lazy var verticalCollectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.prefetchDataSource = self
+        collectionView.backgroundColor = .clear
+        return collectionView
+    }()
+
+    private lazy var horizontalCollectionView: UICollectionView = {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeHorizontalCollectionViewFlowLayout())
+        collectionView.delegate = self
+        collectionView.dataSource = self
         collectionView.backgroundColor = .clear
         return collectionView
     }()
@@ -64,13 +72,14 @@ class ResultViewController: BaseViewController {
         super.viewDidLoad()
         setupNavigation()
         addButtonTapped()
-        collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
+        verticalCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
+        horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
         fetchData(sortingType: SortingType.accuracy)
     }
 
     override func configureViewHierarchy() {
         super.configureViewHierarchy()
-        [resultCountLabel, buttonStackView, collectionView].forEach { view.addSubview($0) }
+        [resultCountLabel, buttonStackView, verticalCollectionView, horizontalCollectionView].forEach { view.addSubview($0) }
     }
 
     override func configureLayout() {
@@ -94,10 +103,17 @@ class ResultViewController: BaseViewController {
             make.height.equalTo(40)
         }
 
-        collectionView.snp.makeConstraints { make in
+        verticalCollectionView.snp.makeConstraints { make in
             make.top.equalTo(buttonStackView.snp.bottom).offset(8)
             make.directionalHorizontalEdges.equalToSuperview()
+            make.bottom.equalTo(horizontalCollectionView.snp.top)
+        }
+
+        horizontalCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(verticalCollectionView.snp.bottom)
+            make.directionalHorizontalEdges.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.height.equalTo(100)
         }
     }
 
@@ -142,24 +158,37 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
+    private func makeHorizontalCollectionViewFlowLayout() -> UICollectionViewFlowLayout {
+        let deviceWidth = UIScreen.main.bounds.width
+        let layout = UICollectionViewFlowLayout()
+
+        let cellWidth = deviceWidth - (16 * 2) - (8 * 3)
+        layout.itemSize = CGSize(width: cellWidth / 4, height: cellWidth / 4)
+        layout.sectionInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        layout.minimumInteritemSpacing = 8
+        layout.scrollDirection = .horizontal
+
+        return layout
+    }
+
     private func fetchData(sortingType: SortingType, display: Int = QueryData.displayNum) {
         let networkManager = NetworkManager.shared
 
         guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: sortingType.rawValue) else {
             return
         }
-
+ 
         networkManager.fetch(url: url) { response in
             switch response {
             case .success(let data):
                 if !self.isEnd {
                     self.currentData = data
                     self.currentItemData.append(contentsOf: data.items)
-                    self.collectionView.reloadData()
+                    self.verticalCollectionView.reloadData()
                 }
 
                 if self.start == 1 {
-                    self.collectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+                    self.verticalCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
                 }
 
                 DispatchQueue.main.async {
@@ -192,15 +221,28 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
             }
         }
     }
-    
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        currentItemData.count
+        if collectionView == verticalCollectionView {
+            return currentItemData.count
+        } else if collectionView == horizontalCollectionView {
+            return 10
+        }
+
+        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
-        cell.configureCell(with: currentItemData[indexPath.row])
-        return cell
+
+        if collectionView == verticalCollectionView {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
+            cell.configureCell(with: currentItemData[indexPath.row])
+            return cell
+        } else if collectionView == horizontalCollectionView {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SuggestCollectionViewCell.self), for: indexPath) as? SuggestCollectionViewCell else { return .init() }
+            return cell
+        }
+
+        return UICollectionViewCell()
     }
 }
