@@ -243,7 +243,10 @@ class ResultViewController: BaseViewController {
     private func fetchSuggestData(sortingType: SortingType, display: Int = QueryData.displayNum) {
 
         let keyword = "공룡"
-        guard let url = networkManager.getURL(keyword: keyword, display: display, start: 1, sortingType: SortingType.accuracy.rawValue) else { return }
+
+        let queries = networkManager.makeNaverSearchQueries(keyword: keyword, display: QueryData.displayNum, start: start, sortingType: sortingType.rawValue)
+
+        guard let url = networkManager.getURL(scheme: APIData.scheme.rawValue, host: APIData.host.rawValue, path: APIData.path.rawValue, queries: queries) else { return }
 
         guard let headers = APIData.headers else { return }
 
@@ -293,15 +296,19 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
+        print(#function, indexPath)
         switch collectionView.tag {
         case 1:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
             cell.configureCell(with: currentItemData[indexPath.row])
+            let address = String(format: "%p", cell)
+            print(address)
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SuggestCollectionViewCell.self), for: indexPath) as? SuggestCollectionViewCell else { return .init() }
             cell.configureCell(data: suggestItemData[indexPath.row])
+            let address = String(format: "%p", cell)
+            print(address)
             return cell
         default:
             return UICollectionViewCell()
