@@ -31,14 +31,27 @@ enum NetworkError: Error {
     case invalidClientSecret
     case invalidURL
     case failDecoding
+    case noData
+    case unKnownError
+    case serverError(ServerError)
 
-
-    var title: String {
+    var errorMessage: String {
         switch self {
         case .invalidClientID: return "Client ID를 확인해주세요"
         case .invalidClientSecret: return "Client Secret을 확인해주세요"
         case .invalidURL: return "잘못된 URL입니다"
         case .failDecoding: return "디코딩에 실패했습니다"
+        case .noData: return "데이터가 없습니다"
+        case .unKnownError: return "알 수 없는 에러입니다. 개발자 센터에 문의하세요"
+        case .serverError(let serverError): return serverError.errorMessage
+        }
+    }
+
+    var userMessage: String {
+        switch self {
+        case .failDecoding, .invalidClientID, .invalidClientSecret, .invalidURL, .noData: return "서버로부터 데이터를 받을 수 없습니다"
+        case .unKnownError: return "알 수 없는 에러입니다. 고객센터에 문의하세요"
+        case .serverError(let serverError): return serverError.errorMessage
         }
     }
 }

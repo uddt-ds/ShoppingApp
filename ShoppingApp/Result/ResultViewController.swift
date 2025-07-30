@@ -83,6 +83,7 @@ class ResultViewController: BaseViewController {
         horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
         fetchSuggestData(sortingType: SortingType.accuracy)
         fetchData(sortingType: SortingType.accuracy)
+
     }
 
     override func configureViewHierarchy() {
@@ -121,7 +122,7 @@ class ResultViewController: BaseViewController {
             make.top.equalTo(verticalCollectionView.snp.bottom)
             make.directionalHorizontalEdges.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide)
-            make.height.equalTo(100)
+            make.height.equalToSuperview().multipliedBy(0.2)
         }
     }
 
@@ -179,14 +180,20 @@ class ResultViewController: BaseViewController {
         return layout
     }
 
-    private func fetchData(sortingType: SortingType, display: Int = QueryData.displayNum) {
-        print(#function)
 
-        guard let url = networkManager.getURL(keyword: keyword, display: display, start: start, sortingType: sortingType.rawValue) else {
+
+    private func fetchData(sortingType: SortingType) {
+
+        let queries = networkManager.makeNaverSearchQueries(keyword: keyword, display: QueryData.displayNum, start: start, sortingType: sortingType.rawValue)
+
+        guard let url = networkManager.getURL(scheme: APIData.scheme.rawValue, host: APIData.host.rawValue, path: APIData.path.rawValue, queries: queries) else {
+            print(NetworkError.invalidURL.errorMessage)
             return
         }
- 
-        networkManager.fetch(url: url) { response in
+
+        guard let headers = APIData.headers else { return }
+
+        networkManager.fetchData(headers: headers, url: url) { (response: Result<ResultData, Error>) in
             switch response {
             case .success(let data):
                 if !self.isEnd {
@@ -196,13 +203,11 @@ class ResultViewController: BaseViewController {
                 }
 
                 if self.start == 1 {
-                    self.verticalCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+                    self.verticalCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0),
+                                                             at: .top, animated: true)
                 }
 
-                DispatchQueue.main.async {
-                    self.resultCountLabel.text = self.currentData.totalCount
-                    print(self.currentData.totalCount)
-                }
+                self.resultCountLabel.text = self.currentData.totalCount
 
                 if self.start + QueryData.displayNum > self.currentData.total {
                     self.isEnd = true
@@ -211,7 +216,6 @@ class ResultViewController: BaseViewController {
                         self.view.makeToast("마지막 페이지입니다", duration: 2.0, position: .bottom)
                     }
                 }
-
             case .failure(let error):
                 if let searchError = error as? SearchError {
                     switch searchError {
@@ -220,11 +224,17 @@ class ResultViewController: BaseViewController {
                             print(code.rawValue)
                             print(code.description)
                         }
-
                         self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
                     default:
-                        return
+                        print(error.localizedDescription)
                     }
+                } else if let networkError = error as? NetworkError {
+                    switch networkError {
+                    default:
+                        self.showAlert(title: networkError.userMessage)
+                    }
+                } else {
+                    print(NetworkError.unKnownError.errorMessage)
                 }
             }
         }
@@ -235,7 +245,9 @@ class ResultViewController: BaseViewController {
         let keyword = "공룡"
         guard let url = networkManager.getURL(keyword: keyword, display: display, start: 1, sortingType: SortingType.accuracy.rawValue) else { return }
 
-        networkManager.fetch(url: url) { response in
+        guard let headers = APIData.headers else { return }
+
+        networkManager.fetchData(headers: headers, url: url) { (response: Result<ResultData, Error>) in
             switch response {
             case .success(let data):
                 self.suggestItemData = data.items
@@ -251,6 +263,7 @@ class ResultViewController: BaseViewController {
 
                         self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
                     default:
+                        print(error.localizedDescription)
                         return
                     }
                 }
@@ -262,6 +275,7 @@ class ResultViewController: BaseViewController {
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         print(#function, indexPaths)
+
         for indexPath in indexPaths {
             if indexPath.row == (currentItemData.count - 3) && !isEnd {
                 start += QueryData.displayNum

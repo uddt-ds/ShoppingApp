@@ -109,7 +109,7 @@ class ResultCollectionViewCell: UICollectionViewCell {
 
     func configureCell(with data: Items) {
         guard let url = URL(string: data.image) else {
-            print(NetworkError.invalidURL.title)
+            print(NetworkError.invalidURL.errorMessage)
             return
         }
 
