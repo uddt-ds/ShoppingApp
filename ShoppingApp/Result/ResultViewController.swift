@@ -22,9 +22,9 @@ class ResultViewController: BaseViewController {
     }()
 
     let accuracyButton = CustomButton(title: ButtonTitle.accuracy.title, tag: ButtonTitle.accuracy.rawValue)
-    let dateButton = CustomButton(title: ButtonTitle.date.title, tag: ButtonTitle.accuracy.rawValue)
-    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.title, tag: ButtonTitle.accuracy.rawValue)
-    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.title, tag: ButtonTitle.accuracy.rawValue)
+    let dateButton = CustomButton(title: ButtonTitle.date.title, tag: ButtonTitle.date.rawValue)
+    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.title, tag: ButtonTitle.highPrice.rawValue)
+    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.title, tag: ButtonTitle.lowPrice.rawValue)
 
     let networkManager = NetworkManager.shared
 
