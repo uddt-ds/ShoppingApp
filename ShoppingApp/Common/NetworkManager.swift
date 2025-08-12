@@ -8,10 +8,13 @@
 import Foundation
 import Alamofire
 
-struct NetworkManager {
+class NetworkManager {
     static let shared = NetworkManager()
 
     private init() { }
+
+    // 파라미터를 모델로 만들고, 제네릭 타입이나 프로토콜 활용
+    // 라우터 패턴 (나중에 리캡 다 끝나고 공부)
 
     // MARK: URL 정의하는 메서드
     func getURL(scheme: String, host: String, path: String, queries: [URLQueryItem]) -> URL? {

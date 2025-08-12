@@ -33,5 +33,5 @@ enum APIData: String {
 }
 
 enum QueryData {
-    static let displayNum = 30
+    static let displayNum = 100
 }
