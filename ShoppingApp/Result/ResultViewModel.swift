@@ -81,9 +81,14 @@ class ResultViewModel {
         }
     }
 
+    private func getKeyword(keywords: String...) -> String {
+        guard let keyword = keywords.randomElement() else { return "사과" }
+        return keyword
+    }
+
     private func fetchSuggestData(sortingType: SortingType, display: Int = QueryData.displayNum) {
 
-        let keyword = "공룡"
+        let keyword = getKeyword(keywords: "아이패드", "맥북", "에어팟", "아이폰", "포터블모니터")
 
         let queries = networkManager.makeNaverSearchQueries(keyword: keyword, display: QueryData.displayNum, start: start, sortingType: sortingType.rawValue)
 
