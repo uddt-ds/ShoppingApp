@@ -7,9 +7,18 @@
 
 import Foundation
 
-enum ButtonTitle: String {
-    case accuracy = "정확도"
-    case date = "날짜순"
-    case highPrice = "가격높은순"
-    case lowPrice = "가격낮은순"
+enum ButtonTitle: Int, CaseIterable {
+    case accuracy
+    case date
+    case highPrice
+    case lowPrice
+
+    var title: String {
+        switch self {
+        case .accuracy: return "정확도"
+        case .date: return "날짜순"
+        case .highPrice: return "가격높은순"
+        case .lowPrice: return "가격낮은순"
+        }
+    }
 }

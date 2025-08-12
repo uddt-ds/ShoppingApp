@@ -55,7 +55,6 @@ class ResultViewModel {
             switch response {
             case .success(let data):
                 self.currentItemData.value = data
-                // self.currentItemData.value.append(contentsOf: data.items)
 
             case .failure(let error):
                 if let searchError = error as? SearchError {

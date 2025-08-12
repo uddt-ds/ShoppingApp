@@ -21,10 +21,10 @@ class ResultViewController: BaseViewController {
         return label
     }()
 
-    let accuracyButton = CustomButton(title: ButtonTitle.accuracy.rawValue, tag: 0)
-    let dateButton = CustomButton(title: ButtonTitle.date.rawValue, tag: 1)
-    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.rawValue, tag: 2)
-    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.rawValue, tag: 3)
+    let accuracyButton = CustomButton(title: ButtonTitle.accuracy.title, tag: ButtonTitle.accuracy.rawValue)
+    let dateButton = CustomButton(title: ButtonTitle.date.title, tag: ButtonTitle.accuracy.rawValue)
+    let highPriceButton = CustomButton(title: ButtonTitle.highPrice.title, tag: ButtonTitle.accuracy.rawValue)
+    let lowPriceButton = CustomButton(title: ButtonTitle.lowPrice.title, tag: ButtonTitle.accuracy.rawValue)
 
     let networkManager = NetworkManager.shared
 
@@ -76,6 +76,12 @@ class ResultViewController: BaseViewController {
         verticalCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
         horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
 
+        viewModel.viewDidLoadTrigger.value = ()
+
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
         viewModel.currentCategory.value = .accuracy
 
         viewModel.currentItemData.bind { data in
@@ -83,7 +89,7 @@ class ResultViewController: BaseViewController {
             self.resultCountLabel.text = data.totalCount
             self.verticalCollectionView.reloadData()
         }
-        
+
         viewModel.suggestItemData.bind { data in
             self.suggestItemData = data.items
             self.horizontalCollectionView.reloadData()
@@ -92,8 +98,6 @@ class ResultViewController: BaseViewController {
         viewModel.errorMessage.bind { message in
             self.showAlert(title: message)
         }
-
-        viewModel.viewDidLoadTrigger.value = ()
     }
 
     override func configureViewHierarchy() {
