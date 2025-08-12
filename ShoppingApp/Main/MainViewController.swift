@@ -82,7 +82,9 @@ class MainViewController: BaseViewController {
         mainViewModel.outputKeywordResult.bind { resultData in
             switch resultData {
             case .success(let result):
-                let vc = ResultViewController(keyword: result)
+                print(result)
+                let viewModel = ResultViewModel(result)
+                let vc = ResultViewController(viewModel: viewModel)
                 self.navigationController?.pushViewController(vc, animated: true)
             case .failure(let error):
                 print(error)

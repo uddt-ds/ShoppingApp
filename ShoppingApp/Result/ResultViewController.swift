@@ -11,6 +11,8 @@ import Toast
 
 class ResultViewController: BaseViewController {
 
+    let viewModel: ResultViewModel
+
     let resultCountLabel: UILabel = {
         let label = UILabel()
         label.font = .customFont(.boldSubTitle)
@@ -26,15 +28,9 @@ class ResultViewController: BaseViewController {
 
     let networkManager = NetworkManager.shared
 
-    var currentData: ResultData = .init(total: 0, items: [])
     var currentItemData: [Items] = []
-    var currentCategory: SortingType = .accuracy
 
     var suggestItemData: [Items] = []
-
-    var start = 1
-    var isEnd: Bool = false
-
 
     private lazy var verticalCollectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewFlowLayout())
@@ -64,10 +60,8 @@ class ResultViewController: BaseViewController {
         return stackView
     }()
 
-    var keyword: String
-
-    init(keyword: String) {
-        self.keyword = keyword
+    init(viewModel: ResultViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -81,9 +75,25 @@ class ResultViewController: BaseViewController {
         addButtonTapped()
         verticalCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
         horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
-        fetchSuggestData(sortingType: SortingType.accuracy)
-        fetchData(sortingType: SortingType.accuracy)
 
+        viewModel.currentCategory.value = .accuracy
+
+        viewModel.currentItemData.bind { data in
+            self.currentItemData = data.items
+            self.resultCountLabel.text = data.totalCount
+            self.verticalCollectionView.reloadData()
+        }
+        
+        viewModel.suggestItemData.bind { data in
+            self.suggestItemData = data.items
+            self.horizontalCollectionView.reloadData()
+        }
+
+        viewModel.errorMessage.bind { message in
+            self.showAlert(title: message)
+        }
+
+        viewModel.viewDidLoadTrigger.value = ()
     }
 
     override func configureViewHierarchy() {
@@ -137,19 +147,16 @@ class ResultViewController: BaseViewController {
     }
 
     @objc func buttonTapped(_ sender: UIButton) {
+        print(#function)
         let sortingTypeArr = SortingType.allCases
         let selectedType = sortingTypeArr[sender.tag]
+        print(selectedType)
 
-        start = 1
-        isEnd = false
-        currentCategory = selectedType
-        currentItemData.removeAll()
-
-        fetchData(sortingType: currentCategory)
+        viewModel.currentCategory.value = selectedType
     }
 
     func setupNavigation() {
-        navigationItem.title = "\(keyword)"
+        navigationItem.title = "\(viewModel.keyword)"
     }
 
     private func makeCollectionViewFlowLayout() -> UICollectionViewFlowLayout {
@@ -179,112 +186,18 @@ class ResultViewController: BaseViewController {
 
         return layout
     }
-
-
-
-    private func fetchData(sortingType: SortingType) {
-
-        let queries = networkManager.makeNaverSearchQueries(keyword: keyword, display: QueryData.displayNum, start: start, sortingType: sortingType.rawValue)
-
-        guard let url = networkManager.getURL(scheme: APIData.scheme.rawValue, host: APIData.host.rawValue, path: APIData.path.rawValue, queries: queries) else {
-            print(NetworkError.invalidURL.errorMessage)
-            return
-        }
-
-        guard let headers = APIData.headers else { return }
-
-        networkManager.fetchData(headers: headers, url: url) { (response: Result<ResultData, Error>) in
-            switch response {
-            case .success(let data):
-                if !self.isEnd {
-                    self.currentData = data
-                    self.currentItemData.append(contentsOf: data.items)
-                    self.verticalCollectionView.reloadData()
-                }
-
-                if self.start == 1 {
-                    self.verticalCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0),
-                                                             at: .top, animated: true)
-                }
-
-                self.resultCountLabel.text = self.currentData.totalCount
-
-                if self.start + QueryData.displayNum > self.currentData.total {
-                    self.isEnd = true
-
-                    if self.start != 1 || self.start == 1 && ((self.start - 30) * -1) > self.currentData.total {
-                        self.view.makeToast("마지막 페이지입니다", duration: 2.0, position: .bottom)
-                    }
-                }
-            case .failure(let error):
-                if let searchError = error as? SearchError {
-                    switch searchError {
-                    case .serverError:
-                        if let code = searchError.serverErrorLog {
-                            print(code.rawValue)
-                            print(code.description)
-                        }
-                        self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
-                    default:
-                        print(error.localizedDescription)
-                    }
-                } else if let networkError = error as? NetworkError {
-                    switch networkError {
-                    default:
-                        self.showAlert(title: networkError.userMessage)
-                    }
-                } else {
-                    print(NetworkError.unKnownError.errorMessage)
-                }
-            }
-        }
-    }
-
-    private func fetchSuggestData(sortingType: SortingType, display: Int = QueryData.displayNum) {
-
-        let keyword = "공룡"
-
-        let queries = networkManager.makeNaverSearchQueries(keyword: keyword, display: QueryData.displayNum, start: start, sortingType: sortingType.rawValue)
-
-        guard let url = networkManager.getURL(scheme: APIData.scheme.rawValue, host: APIData.host.rawValue, path: APIData.path.rawValue, queries: queries) else { return }
-
-        guard let headers = APIData.headers else { return }
-
-        networkManager.fetchData(headers: headers, url: url) { (response: Result<ResultData, Error>) in
-            switch response {
-            case .success(let data):
-                self.suggestItemData = data.items
-                self.horizontalCollectionView.reloadData()
-            case .failure(let error):
-                if let searchError = error as? SearchError {
-                    switch searchError {
-                    case .serverError:
-                        if let code = searchError.serverErrorLog {
-                            print(code.rawValue)
-                            print(code.description)
-                        }
-
-                        self.showAlert(title: searchError.serverErrorLog?.userMessage ?? "")
-                    default:
-                        print(error.localizedDescription)
-                        return
-                    }
-                }
-            }
-        }
-    }
 }
 
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         print(#function, indexPaths)
 
-        for indexPath in indexPaths {
-            if indexPath.row == (currentItemData.count - 3) && !isEnd {
-                start += QueryData.displayNum
-                fetchData(sortingType: currentCategory)
-            }
-        }
+//        for indexPath in indexPaths {
+//            if indexPath.row == (currentItemData.count - 3) && !isEnd {
+//                start += QueryData.displayNum
+//                fetchData(sortingType: currentCategory)
+//            }
+//        }
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -301,14 +214,10 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
         case 1:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
             cell.configureCell(with: currentItemData[indexPath.row])
-            let address = String(format: "%p", cell)
-            print(address)
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SuggestCollectionViewCell.self), for: indexPath) as? SuggestCollectionViewCell else { return .init() }
             cell.configureCell(data: suggestItemData[indexPath.row])
-            let address = String(format: "%p", cell)
-            print(address)
             return cell
         default:
             return UICollectionViewCell()
