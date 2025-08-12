@@ -44,6 +44,7 @@ class MainViewController: BaseViewController {
         super.viewDidLoad()
         setupNavigation()
         searchBar.delegate = self
+        bindData()
     }
 
     override func configureViewHierarchy() {
@@ -77,6 +78,21 @@ class MainViewController: BaseViewController {
         }
     }
 
+    private func bindData() {
+        mainViewModel.outputKeywordResult.bind { resultData in
+            switch resultData {
+            case .success(let result):
+                let vc = ResultViewController(keyword: result)
+                self.navigationController?.pushViewController(vc, animated: true)
+            case .failure(let error):
+                print(error)
+                if let error = error as? SearchError {
+                    self.showAlert(title: error.title)
+                }
+            }
+        }
+    }
+
     private func setupNavigation() {
         navigationItem.title = "\(nickname)의 쇼핑쇼핑"
         navigationController?.navigationBar.tintColor = .main
@@ -87,17 +103,7 @@ class MainViewController: BaseViewController {
 extension MainViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
 
-        let result = mainViewModel.validate(searchBar.text)
-        switch result {
-        case .success(let result):
-            print(result)
-            let vc = ResultViewController(keyword: result)
-            navigationController?.pushViewController(vc, animated: true)
-        case .failure(let error):
-            if let error = error as? SearchError {
-                showAlert(title: error.title)
-            }
-        }
+        mainViewModel.inputReturnButtonTapped.value = searchBar.text
 
         view.endEditing(true)
     }

@@ -16,11 +16,20 @@ import Foundation
 final class MainViewModel {
     var nickname: String = "영캠러"
 
+    var inputReturnButtonTapped: Observable<String?> = Observable(value: "")
+
+    init() {
+        inputReturnButtonTapped.bind { text in
+            self.outputKeywordResult.value = self.validate(text)
+        }
+    }
+
+    var outputKeywordResult: Observable<Result<String,Error>> = Observable(value: .success(""))
+
     func validate(_ text: String?) -> Result<String, Error> {
         guard let text, text.count >= 2 else {
             return .failure(SearchError.shortInput)
         }
-
         return .success(text)
     }
 
