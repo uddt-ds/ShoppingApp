@@ -8,9 +8,11 @@
 import UIKit
 import SnapKit
 
-class ViewController: BaseViewController {
+class MainViewController: BaseViewController {
 
     var nickname: String = "영캠러"
+
+    let mainViewModel = MainViewModel()
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -82,15 +84,20 @@ class ViewController: BaseViewController {
     }
 }
 
-extension ViewController: UISearchBarDelegate {
+extension MainViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let text = searchBar.text, text.count >= 2 else {
-            super.showAlert(title: SearchError.shortInput.title)
-            return
-        }
 
-        let vc = ResultViewController(keyword: text)
-        navigationController?.pushViewController(vc, animated: true)
+        let result = mainViewModel.validate(searchBar.text)
+        switch result {
+        case .success(let result):
+            print(result)
+            let vc = ResultViewController(keyword: result)
+            navigationController?.pushViewController(vc, animated: true)
+        case .failure(let error):
+            if let error = error as? SearchError {
+                showAlert(title: error.title)
+            }
+        }
 
         view.endEditing(true)
     }
