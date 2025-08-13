@@ -10,8 +10,6 @@ import SnapKit
 
 class MainViewController: BaseViewController {
 
-    var nickname: String = "영캠러"
-
     let mainViewModel = MainViewModel()
 
     let searchBar: UISearchBar = {
@@ -79,24 +77,20 @@ class MainViewController: BaseViewController {
     }
 
     private func bindData() {
-        mainViewModel.outputKeywordResult.bind { resultData in
+        mainViewModel.outputKeywordResult.lazyBind { resultData in
             switch resultData {
             case .success(let result):
-                print(result)
                 let viewModel = ResultViewModel(result)
                 let vc = ResultViewController(viewModel: viewModel)
                 self.navigationController?.pushViewController(vc, animated: true)
             case .failure(let error):
-                print(error)
-                if let error = error as? SearchError {
-                    self.showAlert(title: error.title)
-                }
+                self.showAlert(title: error.title)
             }
         }
     }
 
     private func setupNavigation() {
-        navigationItem.title = "\(nickname)의 쇼핑쇼핑"
+        navigationItem.title = "\(mainViewModel.nickname)의 쇼핑쇼핑"
         navigationController?.navigationBar.tintColor = .main
         navigationItem.backButtonTitle = ""
     }
@@ -105,7 +99,7 @@ class MainViewController: BaseViewController {
 extension MainViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
 
-        mainViewModel.inputReturnButtonTapped.value = searchBar.text
+        mainViewModel.input.returnButtonTapped.value = searchBar.text
 
         view.endEditing(true)
     }

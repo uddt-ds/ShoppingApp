@@ -76,26 +76,26 @@ class ResultViewController: BaseViewController {
         verticalCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ResultCollectionViewCell.self))
         horizontalCollectionView.register(SuggestCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: SuggestCollectionViewCell.self))
 
-        viewModel.viewDidLoadTrigger.value = ()
+        viewModel.input.viewDidLoadTrigger.value = ()
 
         bindViewModel()
     }
 
     private func bindViewModel() {
-        viewModel.currentCategory.value = .accuracy
+        viewModel.input.currentCategory.value = .accuracy
 
-        viewModel.currentItemData.bind { data in
+        viewModel.output.currentItemData.lazyBind { data in
             self.currentItemData = data.items
             self.resultCountLabel.text = data.totalCount
             self.verticalCollectionView.reloadData()
         }
 
-        viewModel.suggestItemData.bind { data in
+        viewModel.output.suggestItemData.lazyBind { data in
             self.suggestItemData = data.items
             self.horizontalCollectionView.reloadData()
         }
 
-        viewModel.errorMessage.bind { message in
+        viewModel.output.errorMessage.lazyBind { message in
             self.showAlert(title: message)
         }
     }
@@ -151,12 +151,11 @@ class ResultViewController: BaseViewController {
     }
 
     @objc func buttonTapped(_ sender: UIButton) {
-        print(#function)
         let sortingTypeArr = SortingType.allCases
         let selectedType = sortingTypeArr[sender.tag]
-        print(selectedType)
 
-        viewModel.currentCategory.value = selectedType
+
+        viewModel.input.currentCategory.value = selectedType
     }
 
     func setupNavigation() {
@@ -194,7 +193,6 @@ class ResultViewController: BaseViewController {
 
 extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        print(#function, indexPaths)
 
 //        for indexPath in indexPaths {
 //            if indexPath.row == (currentItemData.count - 3) && !isEnd {
@@ -213,7 +211,6 @@ extension ResultViewController: UICollectionViewDelegate, UICollectionViewDataSo
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print(#function, indexPath)
         switch collectionView.tag {
         case 1:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ResultCollectionViewCell.self), for: indexPath) as? ResultCollectionViewCell else { return .init() }
